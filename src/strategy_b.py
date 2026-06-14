@@ -88,12 +88,12 @@ def analyze_mode_b(catalyst_row: dict[str, Any], daily_df: pd.DataFrame, setting
     df = normalize_daily_frame(daily_df)
     catalyst_date = str(catalyst_row["catalyst_date"])
     after = df[df["trade_date"] >= catalyst_date].copy().reset_index(drop=True)
-    reasons: list[str] = ["valid_manual_catalyst"]
+    reasons: list[str] = ["有效手动催化剂"]
     soft_fails: list[str] = []
     hard_fails: list[str] = []
 
     if len(after) < 3:
-        hard_fails.append("not_enough_bars_after_catalyst")
+        hard_fails.append("催化剂后K线不足")
         signal = df.iloc[-1]
         return {
             "symbol": catalyst_row["symbol"],
@@ -126,9 +126,9 @@ def analyze_mode_b(catalyst_row: dict[str, Any], daily_df: pd.DataFrame, setting
             signal_candidates = after.iloc[signal_start - 1 : signal_start]
 
     if drop_pct >= settings["min_crash_pct"]:
-        reasons.append("sharp_reversible_drop")
+        reasons.append("急剧可逆下跌")
     else:
-        hard_fails.append("crash_drop_too_small")
+        hard_fails.append("跌幅不足")
 
     best_signal = None
     for _, candidate in signal_candidates.iterrows():
@@ -143,17 +143,17 @@ def analyze_mode_b(catalyst_row: dict[str, Any], daily_df: pd.DataFrame, setting
             best_signal = (candidate, doji, crash_volume)
             break
         if doji["passed"] and not shrink:
-            hard_fails.append("signal_volume_not_shrinking")
+            hard_fails.append("信号量能未缩量")
 
     if best_signal is None:
-        if "signal_volume_not_shrinking" not in hard_fails:
-            hard_fails.append("shrinking_doji_not_found")
+        if "信号量能未缩量" not in hard_fails:
+            hard_fails.append("未找到缩量十字星")
         signal = after.iloc[-1]
         signal_quality = 1.0
     else:
         signal, doji, crash_volume = best_signal
         signal_quality = doji["body_ratio"]
-        reasons.append("shrinking_volume_doji")
+        reasons.append("缩量十字星")
 
     group, score = _score_mode_b(reasons, soft_fails, hard_fails)
     signal_low = round(float(signal["low"]), 2)

@@ -4,11 +4,11 @@ import pandas as pd
 
 
 def _limit_up_code(row: pd.Series) -> str:
-    return str(row.get("浠ｇ爜", row.get("symbol", ""))).zfill(6)
+    return str(row.get("代码", row.get("symbol", ""))).zfill(6)
 
 
 def _limit_up_name(row: pd.Series) -> str:
-    return str(row.get("鍚嶇О", row.get("name", "")))
+    return str(row.get("名称", row.get("name", "")))
 
 
 def build_mode_a_symbols(

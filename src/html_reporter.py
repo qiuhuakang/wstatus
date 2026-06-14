@@ -5,6 +5,18 @@ from pathlib import Path
 from typing import Any
 
 
+GROUP_LABELS = {
+    "core": "核心",
+    "watch": "关注",
+    "excluded": "排除",
+    "not_confirmed": "未确认",
+}
+
+
+def _group_label(value: str) -> str:
+    return GROUP_LABELS.get(value, value)
+
+
 def _format_list(value: Any) -> str:
     if isinstance(value, list):
         return ", ".join(escape(str(item)) for item in value)
@@ -24,7 +36,7 @@ def export_html_report(
             f"<td>{escape(str(result.get('symbol', '')))}</td>"
             f"<td>{escape(str(result.get('name', '')))}</td>"
             f"<td>{escape(str(result.get('mode', '')))}</td>"
-            f"<td>{escape(str(result.get('group', result.get('confirmation_group', ''))))}</td>"
+            f"<td>{escape(_group_label(str(result.get('group', result.get('confirmation_group', '')))))}</td>"
             f"<td>{escape(str(result.get('score', '')))}</td>"
             f"<td>{escape(str(result.get('signal_date', '')))}</td>"
             f"<td>{escape(str(result.get('risk_price', '')))}</td>"
@@ -32,12 +44,12 @@ def export_html_report(
             f"<td>{_format_list(result.get('fail_reasons', result.get('confirmation_fail_reasons', [])))}</td>"
             "</tr>"
         )
-    body = "\n".join(rows) if rows else '<tr><td colspan="9">No matching candidates.</td></tr>'
+    body = "\n".join(rows) if rows else '<tr><td colspan="9">无符合条件的标的</td></tr>'
     html = f"""<!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <title>Wstatus {escape(report_type)} report {escape(report_date)}</title>
+  <title>Wstatus {escape(report_type)} 报告 {escape(report_date)}</title>
   <style>
     body {{ font-family: Arial, sans-serif; margin: 24px; color: #222; }}
     table {{ border-collapse: collapse; width: 100%; }}
@@ -46,10 +58,10 @@ def export_html_report(
   </style>
 </head>
 <body>
-  <h1>Wstatus {escape(report_type)} report {escape(report_date)}</h1>
+  <h1>Wstatus {escape(report_type)} 报告 {escape(report_date)}</h1>
   <table>
     <thead>
-      <tr><th>Symbol</th><th>Name</th><th>Mode</th><th>Group</th><th>Score</th><th>Signal Date</th><th>Risk</th><th>Reasons</th><th>Fail Reasons</th></tr>
+      <tr><th>代码</th><th>名称</th><th>模式</th><th>分组</th><th>评分</th><th>信号日期</th><th>止损价</th><th>通过条件</th><th>未通过条件</th></tr>
     </thead>
     <tbody>
       {body}

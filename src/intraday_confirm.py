@@ -36,39 +36,39 @@ def confirm_pending(pending: dict[str, Any], snapshot: dict[str, Any], settings:
     volume_ratio = float(snapshot.get("volume_ratio", 0.0))
 
     if low < signal_low or last_price < float(pending["risk_price"]):
-        fail_reasons.append("risk_line_broken")
+        fail_reasons.append("跌破风控线")
 
     if pending["mode"] == "A":
         if last_price >= upper_trigger:
-            reasons.append("mode_a_trigger_reached")
+            reasons.append("模式A触及触发价")
         elif last_price >= signal_close:
-            reasons.append("mode_a_signal_close_repaired")
+            reasons.append("模式A修复至信号收盘价")
         else:
-            fail_reasons.append("mode_a_price_not_repaired")
+            fail_reasons.append("模式A价格未修复")
     elif pending["mode"] == "B":
         if low >= signal_low:
-            reasons.append("mode_b_signal_low_held")
+            reasons.append("模式B信号低点守住")
         if last_price >= signal_close or float(snapshot["pct_chg"]) >= settings["repair_buffer_pct"]:
-            reasons.append("mode_b_price_repaired")
+            reasons.append("模式B价格修复")
         else:
-            fail_reasons.append("mode_b_price_not_repaired")
+            fail_reasons.append("模式B价格未修复")
     else:
-        fail_reasons.append("unknown_mode")
+        fail_reasons.append("未知模式")
 
     if volume_ratio >= settings["volume_ratio_min"]:
-        reasons.append("volume_ratio_ok")
+        reasons.append("量比达标")
     else:
-        fail_reasons.append("volume_ratio_weak")
+        fail_reasons.append("量比不足")
 
     has_price_confirmation = any(
         reason in reasons
         for reason in (
-            "mode_a_trigger_reached",
-            "mode_a_signal_close_repaired",
-            "mode_b_price_repaired",
+            "模式A触及触发价",
+            "模式A修复至信号收盘价",
+            "模式B价格修复",
         )
     )
-    confirmed = "risk_line_broken" not in fail_reasons and has_price_confirmation
+    confirmed = "跌破风控线" not in fail_reasons and has_price_confirmation
     result["confirmed"] = confirmed
     if confirmed and not fail_reasons:
         result["confirmation_group"] = "confirmed_core" if pending["group"] == "core" else "confirmed_watch"

@@ -127,7 +127,7 @@ def run_intraday_confirm_with_inputs(
                     "confirmed": False,
                     "confirmation_group": "not_confirmed",
                     "confirmation_reasons": [],
-                    "confirmation_fail_reasons": ["snapshot_missing"],
+                    "confirmation_fail_reasons": ["快照缺失"],
                 }
             )
             continue

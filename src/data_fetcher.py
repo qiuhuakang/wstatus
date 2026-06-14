@@ -56,22 +56,22 @@ def fetch_realtime_snapshots(symbols: list[str]) -> dict[str, dict]:
     rows: dict[str, dict] = {}
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     for _, row in df.iterrows():
-        symbol = str(row.get("浠ｇ爜", ""))
+        symbol = str(row.get("代码", ""))
         if symbol not in symbols:
             continue
-        prev_close = float(row.get("鏄ㄦ敹", 0) or 0)
-        last_price = float(row.get("鏈€鏂颁环", 0) or 0)
+        prev_close = float(row.get("昨收", 0) or 0)
+        last_price = float(row.get("最新价", 0) or 0)
         rows[symbol] = {
             "symbol": symbol,
-            "name": str(row.get("鍚嶇О", "")),
+            "name": str(row.get("名称", "")),
             "last_price": last_price,
-            "open": float(row.get("浠婂紑", 0) or 0),
+            "open": float(row.get("今开", 0) or 0),
             "prev_close": prev_close,
-            "high": float(row.get("鏈€楂?", 0) or 0),
-            "low": float(row.get("鏈€浣?", 0) or 0),
-            "pct_chg": float(row.get("娑ㄨ穼骞?", 0) or 0),
-            "amount": float(row.get("鎴愪氦棰?", 0) or 0),
-            "volume_ratio": float(row.get("閲忔瘮", 0) or 0),
+            "high": float(row.get("最高", 0) or 0),
+            "low": float(row.get("最低", 0) or 0),
+            "pct_chg": float(row.get("涨跌幅", 0) or 0),
+            "amount": float(row.get("成交额", 0) or 0),
+            "volume_ratio": float(row.get("量比", 0) or 0),
             "snapshot_time": now,
         }
     return rows

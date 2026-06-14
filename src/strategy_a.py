@@ -73,7 +73,7 @@ def analyze_mode_a(symbol: str, name: str, daily_df: pd.DataFrame, settings: dic
             "risk_price": 0.0,
             "buy_observation_price": 0.0,
             "reasons": [],
-            "fail_reasons": ["prior_high_not_found"],
+            "fail_reasons": ["未找到前期高点"],
         }
 
     signal = df.iloc[-1]
@@ -94,27 +94,27 @@ def analyze_mode_a(symbol: str, name: str, daily_df: pd.DataFrame, settings: dic
     volume_ok = float(signal["volume"]) <= avg_consolidation_volume * settings["volume_shrink_threshold"]
 
     if prior["rise_pct"] >= settings["min_prior_rise_pct"]:
-        reasons.append("prior_high_has_height")
+        reasons.append("前期高点有足够涨幅")
     else:
-        soft_fails.append("prior_high_height_weak")
+        soft_fails.append("前期高点涨幅不足")
 
     if prior["visibility_source"] == "limit_or_large_bullish":
-        reasons.append("high_visibility_event")
+        reasons.append("高可见度事件")
     else:
-        soft_fails.append("visibility_weaker_than_core")
+        soft_fails.append("可见度弱于核心")
 
     if settings["consolidation_min_days"] <= consolidation_days <= settings["consolidation_max_days"]:
-        reasons.append("consolidation_days_valid")
+        reasons.append("调整天数合理")
     else:
-        hard_fails.append("consolidation_days_out_of_range")
+        hard_fails.append("调整天数超范围")
 
     if pullback_pct <= settings["max_pullback_pct"]:
-        reasons.append("pullback_controlled")
+        reasons.append("回调可控")
     else:
-        hard_fails.append("pullback_too_deep")
+        hard_fails.append("回调过深")
 
     if signal_check["passed"]:
-        reasons.append("bullish_doji_signal")
+        reasons.append("看涨十字星信号")
     else:
         hard_fails.extend(signal_check["fail_reasons"])
 
@@ -125,12 +125,12 @@ def analyze_mode_a(symbol: str, name: str, daily_df: pd.DataFrame, settings: dic
         else consolidation_low
     )
     if float(signal["low"]) < risk_price:
-        hard_fails.append("signal_breaks_consolidation_low")
+        hard_fails.append("信号跌破调整低点")
 
     if volume_ok:
-        reasons.append("volume_not_distributing")
+        reasons.append("量能未放大(非出货)")
     else:
-        soft_fails.append("signal_volume_too_large")
+        soft_fails.append("信号量能过大")
 
     group, score = _score_mode_a(reasons, soft_fails, hard_fails)
     upper_trigger_price = round(

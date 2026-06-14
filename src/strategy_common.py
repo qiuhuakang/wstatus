@@ -49,13 +49,13 @@ def detect_bullish_doji(
 ) -> dict:
     fail_reasons: list[str] = []
     if float(row["close"]) <= float(row["open"]):
-        fail_reasons.append("close_not_above_open")
+        fail_reasons.append("收盘未高于开盘")
     body_ratio = calc_body_ratio(row)
     if body_ratio > max_body_ratio:
-        fail_reasons.append("body_too_large")
+        fail_reasons.append("实体太大")
     amplitude_pct = calc_amplitude_pct(row)
     if amplitude_pct > max_amplitude_pct:
-        fail_reasons.append("amplitude_too_large")
+        fail_reasons.append("振幅过大")
     return {
         "passed": len(fail_reasons) == 0,
         "body_ratio": body_ratio,
