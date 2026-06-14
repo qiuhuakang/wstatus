@@ -4,7 +4,7 @@
 
 **Goal:** Build the first usable `wstatus` Python project with daily Mode A/Mode B screening, 14:30 snapshot confirmation, SQLite persistence, and local CSV/HTML reports.
 
-**Architecture:** Create a small Python CLI application modeled after `D:\quant`'s pipeline shape while keeping the strategy logic independent. The code is split into focused modules: configuration, shared data contracts, strategy analyzers, confirmation, storage, data fetching, reporting, and pipeline orchestration. Tests use constructed pandas DataFrames and temporary SQLite databases so the strategy and persistence behavior is deterministic before real akshare data is used.
+**Architecture:** Create a small Python CLI application modeled after `D:\quant`'s pipeline shape while keeping the strategy logic independent and portable to Linux. The code is split into focused modules: configuration, shared data contracts, strategy analyzers, confirmation, storage, data fetching, reporting, and pipeline orchestration. Tests use constructed pandas DataFrames and temporary SQLite databases so the strategy and persistence behavior is deterministic before real akshare data is used.
 
 **Tech Stack:** Python 3.10+, pandas, numpy, akshare, PyYAML, pytest, SQLite, standard-library argparse/csv/json/html.
 
@@ -16,6 +16,7 @@ Create these files:
 
 - `requirements.txt`: runtime and test dependencies.
 - `.gitignore`: generated data, caches, virtualenvs, and Python artifacts.
+- `pytest.ini`: cross-platform pytest import path configuration.
 - `config/settings.yaml`: default thresholds and paths.
 - `main.py`: CLI entry point for `daily`, `intraday`, and `analyze`.
 - `run_daily.py`: scheduler-friendly 20:00 daily run wrapper.
@@ -46,6 +47,17 @@ Create these files:
 - `tests/test_pipeline.py`: orchestration tests with fake fetchers.
 
 Do not modify `D:\quant`.
+
+## Linux Compatibility Contract
+
+The project must run on both Windows and Linux from the same repository:
+
+- Use `pathlib.Path` and project-relative settings paths; never hardcode `D:\wstatus`, drive letters, or backslash-only path joins in runtime code.
+- Open text files with explicit UTF-8 or UTF-8-SIG where CSV input may come from Excel.
+- Keep CLI commands portable: `python main.py --mode daily ...`, `python main.py --mode intraday ...`, and `pytest ...`.
+- Keep generated files under project-relative `db/` and `data/export/`, both ignored where appropriate.
+- Linux scheduling should work through cron or systemd timers by calling `python /path/to/wstatus/main.py --mode daily` at 20:00 and `python /path/to/wstatus/main.py --mode intraday` at 14:30.
+- Tests must not depend on Windows-only absolute paths. When checking the root path, assert repository shape rather than a drive-specific prefix.
 
 ## Shared Data Contracts
 
@@ -112,6 +124,7 @@ Snapshot row:
 **Files:**
 - Create: `requirements.txt`
 - Create: `.gitignore`
+- Create: `pytest.ini`
 - Create: `config/settings.yaml`
 - Create: `src/__init__.py`
 - Create: `src/config.py`
@@ -176,6 +189,13 @@ db/*.db
 db/*.db-journal
 data/export/
 .superpowers/
+```
+
+Create `pytest.ini`:
+
+```ini
+[pytest]
+pythonpath = .
 ```
 
 Create `src/__init__.py`:
@@ -284,7 +304,7 @@ Expected: PASS.
 Run:
 
 ```bash
-git add .gitignore requirements.txt config/settings.yaml src/__init__.py src/config.py tests/test_config.py
+git add .gitignore pytest.ini requirements.txt config/settings.yaml src/__init__.py src/config.py tests/test_config.py
 git commit -m "chore: scaffold project configuration"
 ```
 
@@ -2447,7 +2467,18 @@ python main.py --mode intraday --date 2026-06-14 --screen-date 2026-06-14
 
 Expected: command exits without Python tracebacks. If no pending confirmations exist, the command prints "No matching candidates." and writes an empty local report.
 
-- [ ] **Step 4: Inspect generated outputs**
+- [ ] **Step 4: Check Linux-compatible scheduler commands**
+
+From a Linux checkout, these cron entries should be valid after dependencies are installed:
+
+```cron
+0 20 * * 1-5 cd /path/to/wstatus && /usr/bin/python3 main.py --mode daily >> logs/daily.log 2>&1
+30 14 * * 1-5 cd /path/to/wstatus && /usr/bin/python3 main.py --mode intraday >> logs/intraday.log 2>&1
+```
+
+Expected: commands use project-relative execution and do not rely on Windows paths.
+
+- [ ] **Step 5: Inspect generated outputs**
 
 Run:
 
@@ -2457,7 +2488,7 @@ Get-ChildItem -Path data/export -Force
 
 Expected: output includes one or more `daily_*.csv`, `daily_*.html`, `intraday_*.csv`, or `intraday_*.html` files after smoke runs.
 
-- [ ] **Step 5: Check git status**
+- [ ] **Step 6: Check git status**
 
 Run:
 
@@ -2467,7 +2498,7 @@ git status --short
 
 Expected: only intentional generated files are untracked. `data/export/` and `db/*.db` should be ignored by `.gitignore`.
 
-- [ ] **Step 6: Commit final verification notes if any tracked docs changed**
+- [ ] **Step 7: Commit final verification notes if any tracked docs changed**
 
 Run only if tracked docs changed:
 

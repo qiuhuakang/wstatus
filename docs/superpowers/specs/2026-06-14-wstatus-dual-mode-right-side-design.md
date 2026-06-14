@@ -18,10 +18,13 @@ The v1 system runs twice per trading day:
 
 The output is layered into core selections and a watchlist. v1 generates local console, CSV, and HTML reports only. It does not send notifications, scrape news, or analyze intraday minute-level paths.
 
+The implementation must be portable to Linux from the same repository. Windows is only the current development location; runtime code should use project-relative paths, `pathlib`, explicit UTF-8 file handling, and CLI commands that work from a Linux checkout.
+
 ## Goals
 
 - Create an independent `wstatus` project under `D:\wstatus`.
 - Preserve the practical engineering shape of `D:\quant` without modifying it.
+- Keep runtime code portable to Linux without Windows-only paths or shell assumptions.
 - Implement two strategy modes with shared data, scoring, reporting, and persistence.
 - Support a stable daily screening run and a lighter 14:30 snapshot confirmation run.
 - Use a manual catalyst pool for Mode B in v1.
