@@ -82,7 +82,7 @@ def test_analyze_mode_a_returns_core_for_clean_chip_consolidation():
     assert result["signal_date"] == "2026-05-28"
     assert result["risk_price"] == 17.55
     assert result["upper_trigger_price"] > result["signal_close"]
-    assert "bullish_doji_signal" in result["reasons"]
+    assert "看涨十字星信号" in result["reasons"]
 
 
 def test_analyze_mode_a_returns_watch_for_non_limit_strong_trend():
@@ -91,7 +91,7 @@ def test_analyze_mode_a_returns_watch_for_non_limit_strong_trend():
     df.loc[df["trade_date"] == "2026-05-21", "close"] = 16.5
     result = analyze_mode_a("000002", "Beta", df, SETTINGS)
     assert result["group"] == "watch"
-    assert "visibility_weaker_than_core" in result["fail_reasons"]
+    assert "可见度弱于核心" in result["fail_reasons"]
 
 
 def test_analyze_mode_a_excludes_when_signal_breaks_consolidation_low():
@@ -102,4 +102,4 @@ def test_analyze_mode_a_excludes_when_signal_breaks_consolidation_low():
         SETTINGS,
     )
     assert result["group"] == "excluded"
-    assert "signal_breaks_consolidation_low" in result["fail_reasons"]
+    assert "信号跌破调整低点" in result["fail_reasons"]

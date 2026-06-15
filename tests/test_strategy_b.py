@@ -73,10 +73,10 @@ def test_analyze_mode_b_returns_core_for_crash_and_shrinking_doji():
     assert result["mode"] == "B"
     assert result["signal_date"] == "2026-06-15"
     assert result["risk_price"] == 8.05
-    assert "shrinking_volume_doji" in result["reasons"]
+    assert "缩量十字星" in result["reasons"]
 
 
 def test_analyze_mode_b_excludes_when_signal_volume_does_not_shrink():
     result = analyze_mode_b(catalyst(), mode_b_frame(signal_volume=2300), SETTINGS)
     assert result["group"] == "excluded"
-    assert "signal_volume_not_shrinking" in result["fail_reasons"]
+    assert "信号量能未缩量" in result["fail_reasons"]

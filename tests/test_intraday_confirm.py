@@ -44,14 +44,14 @@ def test_confirm_mode_a_core_when_price_breaks_upper_trigger():
     result = confirm_pending(pending("A"), snapshot(), SETTINGS)
     assert result["confirmed"] is True
     assert result["confirmation_group"] == "confirmed_core"
-    assert "mode_a_trigger_reached" in result["confirmation_reasons"]
+    assert "模式A触及触发价" in result["confirmation_reasons"]
 
 
 def test_reject_mode_a_when_risk_line_breaks():
     result = confirm_pending(pending("A"), snapshot(last_price=9.9, low=9.8, pct_chg=-8.0), SETTINGS)
     assert result["confirmed"] is False
     assert result["confirmation_group"] == "not_confirmed"
-    assert "risk_line_broken" in result["confirmation_fail_reasons"]
+    assert "跌破风控线" in result["confirmation_fail_reasons"]
 
 
 def test_confirm_mode_b_when_signal_low_holds_and_price_repairs():
@@ -59,11 +59,11 @@ def test_confirm_mode_b_when_signal_low_holds_and_price_repairs():
     p["upper_trigger_price"] = 10.8
     result = confirm_pending(p, snapshot(last_price=10.9, low=10.1, pct_chg=0.93), SETTINGS)
     assert result["confirmed"] is True
-    assert "mode_b_signal_low_held" in result["confirmation_reasons"]
+    assert "模式B信号低点守住" in result["confirmation_reasons"]
 
 
 def test_watch_confirmation_when_volume_is_weak():
     result = confirm_pending(pending("A"), snapshot(volume_ratio=0.4), SETTINGS)
     assert result["confirmed"] is True
     assert result["confirmation_group"] == "confirmed_watch"
-    assert "volume_ratio_weak" in result["confirmation_fail_reasons"]
+    assert "量比不足" in result["confirmation_fail_reasons"]

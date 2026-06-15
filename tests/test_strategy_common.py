@@ -20,7 +20,7 @@ def test_detect_bullish_doji_rejects_red_body():
     row = {"open": 10.3, "high": 10.8, "low": 9.8, "close": 10.1, "volume": 1000}
     result = detect_bullish_doji(row, max_body_ratio=0.35, max_amplitude_pct=12.0)
     assert result["passed"] is False
-    assert "close_not_above_open" in result["fail_reasons"]
+    assert "收盘未高于开盘" in result["fail_reasons"]
 
 
 def test_detect_shrinking_volume_compares_signal_to_baseline():

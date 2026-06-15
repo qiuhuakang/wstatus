@@ -40,6 +40,7 @@ def settings():
                 "max_signal_amplitude_pct": 9.0,
                 "volume_shrink_threshold": 1.10,
                 "upper_trigger_buffer_pct": 1.0,
+                "min_history_bars": 20,
             },
             "mode_b": {
                 "crash_window_days": 5,
@@ -68,6 +69,20 @@ def test_run_daily_screen_with_inputs_returns_core_candidate():
     )
     assert results[0]["symbol"] == "000001"
     assert results[0]["group"] == "core"
+
+
+def test_run_daily_screen_with_inputs_skips_newly_listed_stocks():
+    short_frame = mode_a_frame().tail(10).reset_index(drop=True)
+
+    results = run_daily_screen_with_inputs(
+        screen_date="2026-05-28",
+        mode_a_candidates=[{"symbol": "000001", "name": "Alpha", "source": "limit_up"}],
+        mode_b_candidates=[],
+        daily_frames={"000001": short_frame},
+        settings=settings(),
+    )
+
+    assert results == []
 
 
 def test_build_daily_mode_a_candidates_uses_non_limit_universe():

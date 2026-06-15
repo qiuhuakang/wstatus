@@ -75,6 +75,11 @@ def _fetch_daily_frames(symbols: list[str], calendar_days: int) -> dict[str, Any
     return frames
 
 
+def _has_enough_history(frame: Any, settings: dict[str, Any]) -> bool:
+    min_bars = settings["params"]["mode_a"].get("min_history_bars", 0)
+    return len(frame) >= min_bars
+
+
 def build_daily_mode_a_candidates(limit_pool: Any, strong_pool: Any, settings: dict[str, Any]) -> list[dict[str, Any]]:
     mode_a = settings["params"]["mode_a"]
     return build_mode_a_symbols(
@@ -97,7 +102,7 @@ def run_daily_screen_with_inputs(
     results: list[dict[str, Any]] = []
     for candidate in mode_a_candidates:
         frame = daily_frames.get(candidate["symbol"])
-        if _is_empty_frame(frame):
+        if _is_empty_frame(frame) or not _has_enough_history(frame, settings):
             continue
         results.append(
             analyze_mode_a(
@@ -109,7 +114,7 @@ def run_daily_screen_with_inputs(
         )
     for candidate in mode_b_candidates:
         frame = daily_frames.get(candidate["symbol"])
-        if _is_empty_frame(frame):
+        if _is_empty_frame(frame) or not _has_enough_history(frame, settings):
             continue
         results.append(analyze_mode_b(candidate["catalyst"], frame, settings["params"]["mode_b"]))
     return sorted(
