@@ -1,6 +1,10 @@
 import pandas as pd
 
-from src.pipeline import run_daily_screen_with_inputs, run_intraday_confirm_with_inputs
+from src.pipeline import (
+    build_daily_mode_a_candidates,
+    run_daily_screen_with_inputs,
+    run_intraday_confirm_with_inputs,
+)
 
 
 def mode_a_frame():
@@ -64,6 +68,18 @@ def test_run_daily_screen_with_inputs_returns_core_candidate():
     )
     assert results[0]["symbol"] == "000001"
     assert results[0]["group"] == "core"
+
+
+def test_build_daily_mode_a_candidates_uses_non_limit_universe():
+    strong = pd.DataFrame(
+        [
+            {"symbol": "000005", "name": "Sideways", "amount": 180000000, "rise_pct": 1.2},
+        ]
+    )
+
+    candidates = build_daily_mode_a_candidates(None, strong, settings())
+
+    assert candidates == [{"symbol": "000005", "name": "Sideways", "source": "strong_trend"}]
 
 
 def test_run_intraday_confirm_with_inputs_returns_confirmation():

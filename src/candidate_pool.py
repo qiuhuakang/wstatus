@@ -16,6 +16,8 @@ def build_mode_a_symbols(
     strong_trend_pool: pd.DataFrame,
     min_amount: float,
     min_rise_pct: float,
+    require_rise_pct: bool = True,
+    max_strong_candidates: int | None = None,
 ) -> list[dict]:
     results: list[dict] = []
     seen: set[str] = set()
@@ -29,13 +31,23 @@ def build_mode_a_symbols(
             seen.add(symbol)
 
     if strong_trend_pool is not None and not strong_trend_pool.empty:
-        for _, row in strong_trend_pool.iterrows():
+        strong_rows = strong_trend_pool.copy()
+        if "amount" in strong_rows.columns:
+            strong_rows = strong_rows.sort_values("amount", ascending=False)
+        added = 0
+        for _, row in strong_rows.iterrows():
             symbol = str(row["symbol"]).zfill(6)
             if symbol in seen:
                 continue
-            if float(row.get("amount", 0)) >= min_amount and float(row.get("rise_pct", 0)) >= min_rise_pct:
-                results.append({"symbol": symbol, "name": str(row.get("name", "")), "source": "strong_trend"})
-                seen.add(symbol)
+            amount_ok = float(row.get("amount", 0)) >= min_amount
+            rise_ok = (not require_rise_pct) or float(row.get("rise_pct", 0)) >= min_rise_pct
+            if not (amount_ok and rise_ok):
+                continue
+            results.append({"symbol": symbol, "name": str(row.get("name", "")), "source": "strong_trend"})
+            seen.add(symbol)
+            added += 1
+            if max_strong_candidates is not None and added >= max_strong_candidates:
+                break
 
     return results
 

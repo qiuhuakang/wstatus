@@ -49,6 +49,28 @@ def fetch_limit_up_pool(trade_date: str) -> pd.DataFrame:
     return ak.stock_zt_pool_em(date=trade_date.replace("-", ""))
 
 
+def fetch_strong_trend_pool() -> pd.DataFrame:
+    df = ak.stock_zh_a_spot_em()
+    if df is None or df.empty:
+        return pd.DataFrame(columns=["symbol", "name", "amount", "rise_pct"])
+
+    rename_map = {
+        "代码": "symbol",
+        "名称": "name",
+        "成交额": "amount",
+        "涨跌幅": "rise_pct",
+    }
+    result = df.rename(columns=rename_map).copy()
+    for column in ("symbol", "name", "amount", "rise_pct"):
+        if column not in result.columns:
+            result[column] = 0 if column in {"amount", "rise_pct"} else ""
+    result["symbol"] = result["symbol"].astype(str).str.zfill(6)
+    result["name"] = result["name"].astype(str)
+    result["amount"] = pd.to_numeric(result["amount"], errors="coerce").fillna(0.0)
+    result["rise_pct"] = pd.to_numeric(result["rise_pct"], errors="coerce").fillna(0.0)
+    return result[["symbol", "name", "amount", "rise_pct"]]
+
+
 def fetch_realtime_snapshots(symbols: list[str]) -> dict[str, dict]:
     df = ak.stock_zh_a_spot_em()
     if df is None or df.empty:
