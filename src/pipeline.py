@@ -8,8 +8,8 @@ from src.config import load_settings
 from src.data_fetcher import (
     fetch_daily_kline,
     fetch_limit_up_pool,
+    fetch_market_snapshot,
     fetch_realtime_snapshots,
-    fetch_strong_trend_pool,
     fetch_trading_calendar,
     resolve_trading_day,
 )
@@ -54,11 +54,11 @@ def _fetch_limit_pool(screen_date: str) -> Any:
         return None
 
 
-def _fetch_strong_trend_pool() -> Any:
+def _fetch_market_snapshot() -> Any:
     try:
-        return fetch_strong_trend_pool()
+        return fetch_market_snapshot()
     except Exception as exc:
-        _warn_data_issue("strong_trend_pool", exc)
+        _warn_data_issue("market_snapshot", exc)
         return None
 
 
@@ -80,15 +80,14 @@ def _has_enough_history(frame: Any, settings: dict[str, Any]) -> bool:
     return len(frame) >= min_bars
 
 
-def build_daily_mode_a_candidates(limit_pool: Any, strong_pool: Any, settings: dict[str, Any]) -> list[dict[str, Any]]:
+def build_daily_mode_a_candidates(limit_pool: Any, market_snapshot: Any, settings: dict[str, Any]) -> list[dict[str, Any]]:
     mode_a = settings["params"]["mode_a"]
     return build_mode_a_symbols(
         limit_pool,
-        strong_pool,
+        market_snapshot,
         min_amount=mode_a["min_amount"],
         min_rise_pct=mode_a["min_prior_rise_pct"],
         require_rise_pct=False,
-        max_strong_candidates=mode_a.get("max_strong_trend_candidates"),
     )
 
 
@@ -172,8 +171,8 @@ def run_daily_screen(
     init_db(db_path)
 
     limit_pool = _fetch_limit_pool(actual_date)
-    strong_pool = _fetch_strong_trend_pool()
-    mode_a_candidates = build_daily_mode_a_candidates(limit_pool, strong_pool, settings)
+    market_snapshot = _fetch_market_snapshot()
+    mode_a_candidates = build_daily_mode_a_candidates(limit_pool, market_snapshot, settings)
     catalyst_rows, catalyst_issues = load_catalyst_pool(settings["paths"]["catalyst_pool"], actual_date)
     mode_b_candidates = build_mode_b_candidates(catalyst_rows)
     all_symbols = sorted({candidate["symbol"] for candidate in mode_a_candidates + mode_b_candidates})

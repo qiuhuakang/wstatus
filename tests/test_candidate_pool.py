@@ -3,7 +3,7 @@ import pandas as pd
 from src.candidate_pool import build_mode_a_symbols, build_mode_b_candidates
 
 
-def test_build_mode_a_symbols_prioritizes_limit_up_and_amount():
+def test_build_mode_a_symbols_prioritizes_limit_up_and_uses_market_snapshot():
     limit_up = pd.DataFrame(
         [
             {"symbol": "000001", "name": "Alpha", "amount": 200000000},
@@ -21,31 +21,32 @@ def test_build_mode_a_symbols_prioritizes_limit_up_and_amount():
     assert result == [
         {"symbol": "000001", "name": "Alpha", "source": "limit_up"},
         {"symbol": "000002", "name": "Beta", "source": "limit_up"},
-        {"symbol": "000003", "name": "Gamma", "source": "strong_trend"},
+        {"symbol": "000003", "name": "Gamma", "source": "market_snapshot"},
     ]
 
 
-def test_build_mode_a_symbols_allows_non_limit_high_amount_universe():
-    strong = pd.DataFrame(
+def test_build_mode_a_symbols_scans_all_liquid_market_snapshot_without_amount_top_cutoff():
+    market_snapshot = pd.DataFrame(
         [
             {"symbol": "000005", "name": "Sideways", "amount": 180000000, "rise_pct": 1.2},
             {"symbol": "000006", "name": "Quiet", "amount": 90000000, "rise_pct": 2.0},
             {"symbol": "000007", "name": "Liquid", "amount": 260000000, "rise_pct": -0.5},
+            {"symbol": "000008", "name": "AlsoLiquid", "amount": 120000000, "rise_pct": 0.1},
         ]
     )
 
     result = build_mode_a_symbols(
         None,
-        strong,
+        market_snapshot,
         min_amount=100000000,
         min_rise_pct=18.0,
         require_rise_pct=False,
-        max_strong_candidates=2,
     )
 
     assert result == [
-        {"symbol": "000007", "name": "Liquid", "source": "strong_trend"},
-        {"symbol": "000005", "name": "Sideways", "source": "strong_trend"},
+        {"symbol": "000005", "name": "Sideways", "source": "market_snapshot"},
+        {"symbol": "000007", "name": "Liquid", "source": "market_snapshot"},
+        {"symbol": "000008", "name": "AlsoLiquid", "source": "market_snapshot"},
     ]
 
 
@@ -78,7 +79,7 @@ def test_build_mode_a_symbols_excludes_untradable_and_illiquid_names():
 
     assert result == [
         {"symbol": "000001", "name": "Normal", "source": "limit_up"},
-        {"symbol": "000005", "name": "Liquid", "source": "strong_trend"},
+        {"symbol": "000005", "name": "Liquid", "source": "market_snapshot"},
     ]
 
 

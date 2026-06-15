@@ -51,11 +51,10 @@ def _limit_up_name(row: pd.Series) -> str:
 
 def build_mode_a_symbols(
     limit_up_pool: pd.DataFrame,
-    strong_trend_pool: pd.DataFrame,
+    market_snapshot: pd.DataFrame,
     min_amount: float,
     min_rise_pct: float,
     require_rise_pct: bool = True,
-    max_strong_candidates: int | None = None,
 ) -> list[dict]:
     results: list[dict] = []
     seen: set[str] = set()
@@ -72,12 +71,8 @@ def build_mode_a_symbols(
             results.append({"symbol": symbol, "name": name, "source": "limit_up"})
             seen.add(symbol)
 
-    if strong_trend_pool is not None and not strong_trend_pool.empty:
-        strong_rows = strong_trend_pool.copy()
-        if "amount" in strong_rows.columns:
-            strong_rows = strong_rows.sort_values("amount", ascending=False)
-        added = 0
-        for _, row in strong_rows.iterrows():
+    if market_snapshot is not None and not market_snapshot.empty:
+        for _, row in market_snapshot.iterrows():
             symbol = normalize_symbol(row["symbol"])
             name = str(row.get("name", ""))
             amount = _row_amount(row)
@@ -88,11 +83,8 @@ def build_mode_a_symbols(
             rise_ok = (not require_rise_pct) or float(row.get("rise_pct", 0)) >= min_rise_pct
             if not rise_ok:
                 continue
-            results.append({"symbol": symbol, "name": name, "source": "strong_trend"})
+            results.append({"symbol": symbol, "name": name, "source": "market_snapshot"})
             seen.add(symbol)
-            added += 1
-            if max_strong_candidates is not None and added >= max_strong_candidates:
-                break
 
     return results
 

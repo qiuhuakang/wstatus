@@ -33,7 +33,7 @@ def _find_prior_high(df: pd.DataFrame, settings: dict) -> dict | None:
         if float(high_row["open"]) > 0
         else 0.0
     )
-    visibility_source = "limit_or_large_bullish" if high_to_close_pct >= 9.0 else "strong_trend"
+    visibility_source = "limit_or_large_bullish" if high_to_close_pct >= 9.0 else "non_limit_prior_high"
     return {
         "idx": idx,
         "date": str(high_row["trade_date"]),

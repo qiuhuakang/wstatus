@@ -86,15 +86,15 @@ def test_run_daily_screen_with_inputs_skips_newly_listed_stocks():
 
 
 def test_build_daily_mode_a_candidates_uses_non_limit_universe():
-    strong = pd.DataFrame(
+    market_snapshot = pd.DataFrame(
         [
             {"symbol": "000005", "name": "Sideways", "amount": 180000000, "rise_pct": 1.2},
         ]
     )
 
-    candidates = build_daily_mode_a_candidates(None, strong, settings())
+    candidates = build_daily_mode_a_candidates(None, market_snapshot, settings())
 
-    assert candidates == [{"symbol": "000005", "name": "Sideways", "source": "strong_trend"}]
+    assert candidates == [{"symbol": "000005", "name": "Sideways", "source": "market_snapshot"}]
 
 
 def test_run_intraday_confirm_with_inputs_returns_confirmation():

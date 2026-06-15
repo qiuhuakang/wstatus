@@ -49,7 +49,7 @@ def fetch_limit_up_pool(trade_date: str) -> pd.DataFrame:
     return ak.stock_zt_pool_em(date=trade_date.replace("-", ""))
 
 
-def fetch_strong_trend_pool() -> pd.DataFrame:
+def fetch_market_snapshot() -> pd.DataFrame:
     df = ak.stock_zh_a_spot_em()
     if df is None or df.empty:
         return pd.DataFrame(columns=["symbol", "name", "amount", "rise_pct"])

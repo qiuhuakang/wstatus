@@ -85,7 +85,7 @@ def test_analyze_mode_a_returns_core_for_clean_chip_consolidation():
     assert "看涨十字星信号" in result["reasons"]
 
 
-def test_analyze_mode_a_returns_watch_for_non_limit_strong_trend():
+def test_analyze_mode_a_returns_watch_for_non_limit_prior_high():
     df = mode_a_frame()
     df.loc[df["trade_date"] == "2026-05-21", "high"] = 17.0
     df.loc[df["trade_date"] == "2026-05-21", "close"] = 16.5

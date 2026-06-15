@@ -8,7 +8,6 @@ params:
     prior_high_window: 60
     min_prior_rise_pct: 18.0
     min_amount: 100000000
-    max_strong_trend_candidates: 500
     min_history_bars: 120
     consolidation_min_days: 3
     consolidation_max_days: 15
