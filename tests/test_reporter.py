@@ -29,5 +29,5 @@ def test_export_csv_report_writes_rows(tmp_path):
 def test_export_html_report_contains_group_and_reason(tmp_path):
     path = export_html_report([result()], "daily", "2026-06-14", tmp_path)
     text = Path(path).read_text(encoding="utf-8")
-    assert "Wstatus daily report 2026-06-14" in text
+    assert "Wstatus daily 选股 报告" in text
     assert "bullish_doji_signal" in text
